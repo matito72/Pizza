@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -453,6 +454,40 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             } else if (fragment instanceof ToolsFragment && mapFragment.get(R.id.nav_tools) == null) {
                 mapFragment.put(R.id.nav_tools, fragment);
             }
+        }
+
+        ImageView imgPizza = findViewById(R.id.imgPizza);
+        if (imgPizza != null) {
+            imgPizza.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://it.wikipedia.org/wiki/Teorema_della_pizza"));
+                    startActivity(browserIntent);
+                }
+            });
+        }
+
+        TextView txtEmail = findViewById(R.id.email);
+        if (txtEmail != null) {
+            txtEmail.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+//                    mailto:tito.mancini@corvallis.it
+
+                    Intent intentMail = new Intent(Intent.ACTION_SEND);
+                    intentMail.setType("message/rfc822");
+                    intentMail.putExtra(Intent.EXTRA_EMAIL, new String[]{ "tito.mancini@corvallis.it" });
+                    intentMail.putExtra(Intent.EXTRA_SUBJECT, "PiZZA");
+                    intentMail.putExtra(Intent.EXTRA_TEXT, "..con i colleghi");
+
+// now we have created the mail, lets try and send it.
+                    try {
+                        startActivity(Intent.createChooser(intentMail, "Message to User to do what next"));
+                    } finally {
+
+                    }
+                }
+            });
         }
     }
 
