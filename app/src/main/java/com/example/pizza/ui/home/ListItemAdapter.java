@@ -81,7 +81,7 @@ public class ListItemAdapter extends BaseAdapter {
             titleItem.setText("Nessun snack selezionato");
             imgItem.setVisibility(View.GONE);
             descItem.setText("");
-        } else if (Constant.IMPORTO_TOTALE.equals(itemBean.getTitolo())) {
+        } else if (itemBean.getTitolo().startsWith(Constant.IMPORTO_TOTALE)) {
             titleItem.setText(itemBean.getTitolo());
             imgItem.setVisibility(View.GONE);
             descItem.setText(itemBean.getStrEuro());

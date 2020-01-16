@@ -78,7 +78,7 @@ public class HomeFragment extends Fragment {
                         }
                     }
 
-                    ItemBean itemBeanNew = new ItemBean(Constant.IMPORTO_TOTALE, "", "", String.valueOf(importoTotale.doubleValue()), -1, 3);
+                    ItemBean itemBeanNew = new ItemBean(Constant.IMPORTO_TOTALE + (pagato ? " pagato" : " da pagare"), "", "", importoTotale.toString(), -1, 3);
                     itemBeanNew.setOrder(3);
                     itemBeanNew.setPagato(pagato);
                     lstItemBean.add(itemBeanNew);

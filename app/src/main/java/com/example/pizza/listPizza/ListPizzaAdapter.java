@@ -83,7 +83,7 @@ public class ListPizzaAdapter extends BaseAdapter implements Filterable {
                 holder.txtDescPizza.setText(item.getTitolo());
 
             if (item.getPrezzo().compareTo(BigDecimal.ZERO)  > 0)
-                holder.txtPrezzo.setText("€ " + String.valueOf(item.getPrezzo()));
+                holder.txtPrezzo.setText("€ " + item.getPrezzo());
         }
 
         return convertView;

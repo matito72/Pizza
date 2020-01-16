@@ -42,7 +42,7 @@ public class PizzaBean implements Serializable {
             this.descrizione = titolo;
 
         if (strEuro != null && strEuro.trim().length() != 0)
-            this.prezzo = Util.parseStrEuro((String)strEuro, Locale.ITALIAN);
+            this.prezzo = Util.parseStrEuro(strEuro, Locale.ITALIAN);
 
         this.checked = checked;
     }

@@ -25,7 +25,7 @@ public class ItemBean implements Serializable {
         this.descrizione2 = descrizione2;
         this.strEuro = strEuro;
         if (strEuro != null && strEuro.trim().length() != 0)
-            this.prezzo = Util.parseStrEuro((String)strEuro, Locale.ITALIAN);
+            this.prezzo = Util.parseStrEuro(strEuro, Locale.ITALIAN);
         this.idImmagine = idImmagine;
         this.order = order;
     }

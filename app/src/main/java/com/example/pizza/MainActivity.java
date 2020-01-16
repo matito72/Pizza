@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         NavigationUI.setupWithNavController(navigationView, navController);
 
         FloatingActionMenu menu = findViewById(R.id.menu);
-        com.github.clans.fab.FloatingActionButton btnPizze = (com.github.clans.fab.FloatingActionButton)findViewById(R.id.btnPizze);
+        com.github.clans.fab.FloatingActionButton btnPizze = findViewById(R.id.btnPizze);
         btnPizze.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         });
 
-        com.github.clans.fab.FloatingActionButton btnSnack = (com.github.clans.fab.FloatingActionButton)findViewById(R.id.btnSnack);
+        com.github.clans.fab.FloatingActionButton btnSnack = findViewById(R.id.btnSnack);
         btnSnack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         });
 
-        com.github.clans.fab.FloatingActionButton btnNote = (com.github.clans.fab.FloatingActionButton)findViewById(R.id.btnNote);
+        com.github.clans.fab.FloatingActionButton btnNote = findViewById(R.id.btnNote);
         btnNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
