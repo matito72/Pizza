@@ -6,7 +6,7 @@
     android:padding="6dp">
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/cardPizza"
+        android:id="@+id/cardTotale"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="3dp"
@@ -23,21 +23,14 @@
             android:layout_height="wrap_content"
             android:padding="10dp">
 
-            <ImageView
-                android:id="@+id/imgItem"
-                android:layout_width="100dp"
-                android:layout_height="90dp"
-                android:layout_centerVertical="true"
-                android:src="@drawable/pizza" />
-
             <TextView
-                android:id="@+id/titoloItem"
-                android:layout_width="243dp"
+                android:id="@+id/txtTotale"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="false"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentTop="true"
-                android:layout_marginLeft="133dp"
+                android:layout_marginLeft="15dp"
                 android:layout_marginTop="0dp"
                 android:text="Titolo"
                 android:textColor="@android:color/black"
@@ -48,17 +41,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="133dp"
-                android:layout_marginLeft="133dp"
+                android:layout_marginLeft="15dp"
                 android:layout_marginTop="30dp"
                 android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/descrizioneItem"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Descrizione"
-                    android:textColor="#690101"
-                    android:textSize="18sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -67,18 +52,7 @@
                     android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/txtBabyPizza"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Baby Pizza"
-                        android:textAlignment="textStart"
-                        android:textColor="#690101"
-                        android:textSize="18sp"
-                        android:layout_marginRight="20dp"
-                        android:visibility="gone" />
-
-                    <TextView
-                        android:id="@+id/prezzoItem"
+                        android:id="@+id/txtImportoTotale"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="€"
@@ -86,6 +60,7 @@
                         android:textColor="#690101"
                         android:textSize="18sp" />
                 </LinearLayout>
+
             </LinearLayout>
 
         </RelativeLayout>

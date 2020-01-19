@@ -65,17 +65,20 @@ public class ListItemAdapter extends BaseAdapter {
         MainActivity mainActivity = (MainActivity)parent.getContext();
 
         if (convertView == null) {
-            if (itemBean.getOrder() != 23) {
+            if (itemBean.getOrder() == 1 || itemBean.getOrder() == 2) {
                 convertView = inflater.inflate(R.layout.list_item, container, false);
             } else if (itemBean.getOrder() == 23) {
                 convertView = inflater.inflate(R.layout.list_item_descrizione, container, false);
+            } else if (itemBean.getOrder() == 3) {
+                convertView = inflater.inflate(R.layout.list_item_totale, container, false);
             }
 
             holder = new ListItemAdapter.ViewHolder(convertView);
             convertView.setTag(holder);
         }
 
-        if(itemBean.getOrder() != 23) {
+        if (itemBean.getOrder() == 1 || itemBean.getOrder() == 2) {
+            CardView cardPizza = convertView.findViewById(R.id.cardPizza);
             ImageView imgItem = convertView.findViewById(R.id.imgItem);
             TextView titleItem = convertView.findViewById(R.id.titoloItem);
             TextView descItem = convertView.findViewById(R.id.descrizioneItem);
@@ -86,19 +89,15 @@ public class ListItemAdapter extends BaseAdapter {
 
             if (Constant.NESSUNA_PIZZA_SELEZIONATA.equals(itemBean.getTitolo())) {
                 titleItem.setText("Nessuna pizza selezionata");
-                imgItem.setVisibility(View.GONE);
+//                imgItem.setVisibility(View.GONE);
+                imgItem.setImageResource(R.drawable.piatto_vuoto);
                 descItem.setText("");
+                prezzoItem.setText("€ 0");
             } else if (Constant.NESSUN_SNACK_SELEZIONATO.equals(itemBean.getTitolo())) {
                 titleItem.setText("Nessun snack selezionato");
                 imgItem.setVisibility(View.GONE);
                 descItem.setText("");
-            } else if (itemBean.getTitolo().startsWith(Constant.IMPORTO_TOTALE)) {
-                titleItem.setText(itemBean.getTitolo());
-                imgItem.setVisibility(View.GONE);
-//                titleItem.setTextSize(20);
-                descItem.setText("");
-                descItem.setVisibility(View.GONE);
-                prezzoItem.setText("€ " + itemBean.getStrEuro());
+                cardPizza.setVisibility(View.GONE);
             } else if (itemBean.getTitolo() != null) {
                 titleItem.setText(itemBean.getTitolo());
                 if (itemBean.getTitolo().trim().length() >= 18) {
@@ -157,11 +156,6 @@ public class ListItemAdapter extends BaseAdapter {
                         }
                     });
                 }
-            } else if (itemBean.getOrder() == 3) {
-                if (itemBean.isPagato())
-                    convertView.setBackgroundColor(Color.GREEN);
-                else
-                    convertView.setBackgroundColor(Color.RED);
             }
         } else if(itemBean.getOrder() == 23) {
             CardView cardView = convertView.findViewById(R.id.cardNote);
@@ -185,6 +179,19 @@ public class ListItemAdapter extends BaseAdapter {
                         mainActivity.withMultiChoiceItems(view);
                     }
                 });
+            }
+        } else if (itemBean.getOrder() == 3) {
+            TextView txtTotale = convertView.findViewById(R.id.txtTotale);
+            txtTotale.setText(itemBean.getTitolo());
+            TextView txtImportoTotale = convertView.findViewById(R.id.txtImportoTotale);
+
+            txtImportoTotale.setText("€ " + itemBean.getStrEuro());
+
+            CardView cardTotale = convertView.findViewById(R.id.cardTotale);
+            if (itemBean.isPagato()) {
+                cardTotale.setBackgroundColor(Color.parseColor("#85edb9"));
+            } else {
+                cardTotale.setBackgroundColor(Color.parseColor("#D81B60"));
             }
         }
 
