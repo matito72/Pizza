@@ -59,14 +59,32 @@
                     android:textColor="#690101"
                     android:textSize="18sp" />
 
-                <TextView
-                    android:id="@+id/prezzoItem"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="€"
-                    android:textAlignment="textEnd"
-                    android:textColor="#690101"
-                    android:textSize="18sp" />
+                    android:layout_height="match_parent"
+                    android:gravity="end"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/txtBabyPizza"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Baby Pizza"
+                        android:textAlignment="textStart"
+                        android:textColor="#690101"
+                        android:textSize="18sp"
+                        android:layout_marginRight="20dp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/prezzoItem"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="€"
+                        android:textAlignment="textEnd"
+                        android:textColor="#690101"
+                        android:textSize="18sp" />
+                </LinearLayout>
             </LinearLayout>
 
         </RelativeLayout>

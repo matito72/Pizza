@@ -67,7 +67,7 @@ public class HomeFragment extends Fragment {
                         if (itemBean.isPagato()) {
                             pagato = true;
                         }
-                        if (itemBean.isPizzaBaby()) {
+                        if (itemBean.isPizzaBaby() && itemBean.getPrezzo() != null && itemBean.getPrezzo().doubleValue() > 0) {
                             itemBean.setPrezzo(itemBean.getPrezzo().subtract(new BigDecimal("0.50")));
                             itemBean.setStrEuro(String.valueOf(itemBean.getPrezzo()));
                         }
@@ -88,18 +88,6 @@ public class HomeFragment extends Fragment {
                 listItemView.setAdapter(adapterList);
             }
         });
-
-
-
-
-//        ItemBean itemBean_1 = new ItemBean("CAPRICCIOSA", "pomodoro, carciofi, prosciutto, olive", "", "5,50", R.drawable.pizza, 1);
-//        ItemBean itemBean_2 = new ItemBean("Falafel", "Porzione vaschetta di falafel", "(5 pezzi)", "4,00", R.drawable.falafel, 2);
-//        List<ItemBean> lstItemBean = new ArrayList<>();
-//        lstItemBean.add(itemBean_1);
-//        lstItemBean.add(itemBean_2);
-//
-//        ListItemAdapter adapterList = new ListItemAdapter(inflater, container, lstItemBean);
-//        listItemView.setAdapter(adapterList);
 
         return root;
     }

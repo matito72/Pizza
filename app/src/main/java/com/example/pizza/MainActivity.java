@@ -137,7 +137,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private Boolean pagatoSel;
     private Boolean pizzaBabySel;
+
     private String noteSel;
+    private ItemBean itemBeanNoteSel;
 
     private int posNomeCognome;
     private String dataUltimoPagamentoTrasporto;
@@ -887,8 +889,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                 // Aggiorna la HOME : snack selezionato
                 snackBeanRead = (MainActivity.this.snackBeanSel != null) ? MainActivity.this.snackBeanSel : snackBeanRead;
-                MainActivity.this.itemBeanSnackSel = new ItemBean(snackBeanRead.getTitolo(), snackBeanRead.getDescrizione(), snackBeanRead.getDescrizione2(), snackBeanRead.getStrEuro(), snackBeanRead.getIdImmagine(), 2);
+                MainActivity.this.itemBeanSnackSel = new ItemBean(null, noteRead, null, null, -1, 23);
                 lstItemBean.add(itemBeanSnackSel);
+
+                MainActivity.this.itemBeanNoteSel = new ItemBean(snackBeanRead.getTitolo(), snackBeanRead.getDescrizione(), snackBeanRead.getDescrizione2(), snackBeanRead.getStrEuro(), snackBeanRead.getIdImmagine(), 2);
+                lstItemBean.add(itemBeanNoteSel);
 
 //                MainActivity.this.lstItemBean = lstItemBean;
                 homeFragment.getHomeViewModel().changeDataItemBeanSel(lstItemBean);
