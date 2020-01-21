@@ -7,7 +7,7 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
-    <string name="menu_home">Utente non loggato</string>
+    <string name="menu_home">Connessione in corso...</string>
     <string name="menu_gallery">Ordine</string>
     <string name="menu_slideshow">Pizze Preferite</string>
     <string name="menu_tools">Tools</string>

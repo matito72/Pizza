@@ -13,27 +13,25 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.QuickContactBadge;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -45,11 +43,9 @@ import com.example.pizza.listPizza.ListPizza;
 import com.example.pizza.listPizza.ListPizzaActivity;
 import com.example.pizza.listPizza.PizzaBean;
 import com.example.pizza.listSnack.ListSnackActivity;
-import com.example.pizza.listSnack.ListSnackAdapter;
 import com.example.pizza.listSnack.SnackBean;
 import com.example.pizza.ui.gallery.GalleryFragment;
 import com.example.pizza.ui.home.HomeFragment;
-import com.example.pizza.ui.home.HomeViewModel;
 import com.example.pizza.ui.send.SendFragment;
 import com.example.pizza.ui.settings.SettingsFragment;
 import com.example.pizza.ui.share.ShareFragment;
@@ -58,11 +54,8 @@ import com.example.pizza.ui.tools.ToolsFragment;
 import com.example.pizza.util.DrawableProvider;
 import com.example.pizza.util.Util;
 import com.github.clans.fab.FloatingActionMenu;
-import com.google.android.gms.auth.GoogleAuthException;
-import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -81,23 +74,14 @@ import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.RowData;
 import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
-import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
-import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
-
-import org.mortbay.jetty.Main;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
-import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -154,19 +138,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-//        FloatingActionButton fab = findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-////                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-////                        .setAction("Action", null).show();
-//
-//                Intent intent = new Intent(MainActivity.this, ListPizzaActivity.class) ;
-//                intent.putExtra(Constant.TYPE, DrawableProvider.SAMPLE_ROUND);
-//                intent.putExtra(Constant.LIST_PIZZA, new ListPizza(MainActivity.this.mDataList));
-//                startActivityForResult(intent, SELECT_PIZZA);
-//            }
-//        });
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
 
@@ -210,10 +182,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         btnNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(MainActivity.this, ListSnackActivity.class) ;
-//                startActivityForResult(intent, SELECT_NOTE);
-
-                MainActivity.this.withMultiChoiceItems(view);
+                MainActivity.this.openPopupNoteAndBabyPizza(view);
 
                 menu.close(false);
             }
@@ -229,9 +198,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         return this.mDataList;
     }
 
-    public void withMultiChoiceItems(View view) {
-        final String[] items = {"Pizza Baby"};
-        final boolean[] ckItems = new boolean[]{(this.pizzaBabySel != null && this.pizzaBabySel)};
+    public void setPizzaBabySel(Boolean isPizzaBaby) {
+        this.pizzaBabySel = isPizzaBaby;
+    }
+
+    /**
+     * popup NOTE e BABY PIZZA
+     */
+    public void openPopupNoteAndBabyPizza(View view) {
+//        final String[] items = {"Pizza Baby"};
+//        final boolean[] ckItems = new boolean[]{(this.pizzaBabySel != null && this.pizzaBabySel)};
         final ArrayList<Integer> selectedList = new ArrayList<Integer>();
 
         final EditText input = new EditText(this);
@@ -241,24 +217,23 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("");
-        builder.setMultiChoiceItems(items, ckItems,
-                new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-                        if (isChecked) {
-                            selectedList.add(which);
-                        } else if (selectedList.contains(which)) {
-                            selectedList.remove(Integer.valueOf(which));
-                        }
-                    }
-                });
+        builder.setTitle("    ");
+//        builder.setMultiChoiceItems(items, ckItems,
+//                new DialogInterface.OnMultiChoiceClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+//                        if (isChecked) {
+//                            selectedList.add(which);
+//                        } else if (selectedList.contains(which)) {
+//                            selectedList.remove(Integer.valueOf(which));
+//                        }
+//                    }
+//                });
 
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
         input.setLayoutParams(lp);
-//        builder.setView(input);
         builder.setView(input);
 
 
@@ -272,26 +247,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                ArrayList selectedStrings = new ArrayList<>();
-                for (int j = 0; j < selectedList.size(); j++) {
-                    selectedStrings.add(items[selectedList.get(j)]);
-                }
+//                ArrayList selectedStrings = new ArrayList<>();
+//                for (int j = 0; j < selectedList.size(); j++) {
+//                    selectedStrings.add(items[selectedList.get(j)]);
+//                }
 
-                MainActivity.this.pizzaBabySel = selectedStrings.size() != 0;
+//                MainActivity.this.pizzaBabySel = selectedStrings.size() != 0;
                 MainActivity.this.noteSel = input.getText().toString();
 
                 HomeFragment homeFragment = (HomeFragment) mapFragment.get(R.id.nav_home);
                 LiveData<List<ItemBean>> dataItemBean = homeFragment.getHomeViewModel().getDataItemBean();
                 for (ItemBean item : dataItemBean.getValue()) {
-                    if (item.getOrder() == 1) {
-                        item.setPizzaBaby(MainActivity.this.pizzaBabySel);
-                        item.setNote(MainActivity.this.noteSel);
-                        break;
-                    }
+                    item.setPizzaBaby(MainActivity.this.pizzaBabySel);
+                    item.setNote(MainActivity.this.noteSel);
                 }
-
-//                homeFragment.getHomeViewModel().clearDataItemBean();
-//                homeFragment.getHomeViewModel().changeDataItemBeanSel(dataItemBean.getValue());
 
                 new MakeRequestTask(mCredential).execute();
             }
@@ -300,15 +269,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         builder.show();
     }
 
-//    @Override
-//    public void onAttachedToWindow() {
-//        super.onAttachedToWindow();
-//    }
-//
-//    @Override
-//    public boolean onContextItemSelected(@NonNull MenuItem item) {
-//        return super.onContextItemSelected(item);
-//    }
+    public void execMakRequestTask() {
+        new MakeRequestTask(mCredential).execute();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -430,8 +393,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
             this.aggiornaMapFragment();
             this.getResultsFromApi();
+        } else {
+            getSupportActionBar().setTitle("Utente non loggato!");
+
+            SmoothProgressBar smoothProgressBar = findViewById(R.id.progressbar);
+            smoothProgressBar.progressiveStop();
         }
     }
+
+
 
     public void aggiornaMapFragment() {
         if (mapFragment == null)
@@ -474,17 +444,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             txtEmail.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-//                    mailto:tito.mancini@corvallis.it
+                    String mailTo = getString(R.string.nav_header_subtitle);
 
                     Intent intentMail = new Intent(Intent.ACTION_SEND);
                     intentMail.setType("message/rfc822");
-                    intentMail.putExtra(Intent.EXTRA_EMAIL, new String[]{ "tito.mancini@corvallis.it" });
-                    intentMail.putExtra(Intent.EXTRA_SUBJECT, "PiZZA");
+                    intentMail.putExtra(Intent.EXTRA_EMAIL, new String[]{ mailTo });
+                    intentMail.putExtra(Intent.EXTRA_SUBJECT, "PiZZA!");
                     intentMail.putExtra(Intent.EXTRA_TEXT, "..con i colleghi");
 
-// now we have created the mail, lets try and send it.
                     try {
-                        startActivity(Intent.createChooser(intentMail, "Message to User to do what next"));
+                        startActivity(Intent.createChooser(intentMail, "GMAIL-PiZZA!"));
                     } finally {
 
                     }
@@ -784,7 +753,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
             if (MainActivity.this.posNomeCognome == 0) {
                 // Recupera la lista dei Nome Cognome
-
                 ValueRange response = mService.spreadsheets().values().get(Constant.ID_SHEET_PIZZA, "Ordine!A4:Z").execute();
                 List<List<Object>> lstNomeCognome = response.getValues();
                 if (lstNomeCognome != null) {
@@ -887,13 +855,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 lstItemBean.add(itemBeanPizzaSel);
 //                MainActivity.this.lstItemBean =  homeFragment.getHomeViewModel().addItemBean(itemBeanPizzaSel);
 
+                // Note
+                MainActivity.this.itemBeanNoteSel = new ItemBean(null, noteRead, null, null, -1, 23);
+                itemBeanNoteSel.setPizzaBaby(pizzaBabyRead);
+                lstItemBean.add(itemBeanNoteSel);
+
                 // Aggiorna la HOME : snack selezionato
                 snackBeanRead = (MainActivity.this.snackBeanSel != null) ? MainActivity.this.snackBeanSel : snackBeanRead;
-                MainActivity.this.itemBeanSnackSel = new ItemBean(null, noteRead, null, null, -1, 23);
+                MainActivity.this.itemBeanSnackSel = new ItemBean(snackBeanRead.getTitolo(), snackBeanRead.getDescrizione(), snackBeanRead.getDescrizione2(), snackBeanRead.getStrEuro(), snackBeanRead.getIdImmagine(), 2);
                 lstItemBean.add(itemBeanSnackSel);
-
-                MainActivity.this.itemBeanNoteSel = new ItemBean(snackBeanRead.getTitolo(), snackBeanRead.getDescrizione(), snackBeanRead.getDescrizione2(), snackBeanRead.getStrEuro(), snackBeanRead.getIdImmagine(), 2);
-                lstItemBean.add(itemBeanNoteSel);
 
 //                MainActivity.this.lstItemBean = lstItemBean;
                 homeFragment.getHomeViewModel().changeDataItemBeanSel(lstItemBean);
@@ -933,28 +903,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 mService.spreadsheets().batchUpdate(Constant.ID_SHEET_PIZZA, batchUpdateRequest).execute();
             }
             // --------------------------------------------------------------------------------------------
-
-//            if (MainActivity.this.snackBeanSel != null) {
-//                List<CellData> val = new ArrayList<>();
-//                String strUpdate = Constant.NESSUN_SNACK_SELEZIONATO;
-//                if (MainActivity.this.snackBeanSel.getPrezzo() != null && !MainActivity.this.snackBeanSel.getPrezzo().equals(BigDecimal.ZERO))
-//                    strUpdate = MainActivity.this.snackBeanSel.getDescrizione().toUpperCase() + " " + MainActivity.this.snackBeanSel.getDescrizione2() + " (€ " + MainActivity.this.snackBeanSel.getStrEuro() + ")";
-//                val.add(new CellData().setUserEnteredValue(new ExtendedValue().setStringValue(strUpdate)));
-//                List<Request> requests = new ArrayList<>();
-//                requests.add(new Request()
-//                        .setUpdateCells(new UpdateCellsRequest()
-//                                .setStart(new GridCoordinate()
-//                                        .setSheetId(0)
-//                                        .setRowIndex(posNomeCognome)
-//                                        .setColumnIndex(3))
-//                                .setRows(Arrays.asList(
-//                                        new RowData().setValues(val)))
-//                                .setFields("userEnteredValue,userEnteredFormat.backgroundColor")));
-//
-//                BatchUpdateSpreadsheetRequest batchUpdateRequest = new BatchUpdateSpreadsheetRequest()
-//                        .setRequests(requests);
-//                mService.spreadsheets().batchUpdate(Constant.ID_SHEET_PIZZA, batchUpdateRequest).execute();
-//            }
 
             MainActivity.this.pizzaBeanSel = (pizzaBeanRead != null) ? pizzaBeanRead : MainActivity.this.pizzaBeanSel;
             MainActivity.this.snackBeanSel = (snackBeanRead != null) ? snackBeanRead : MainActivity.this.snackBeanSel;

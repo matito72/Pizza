@@ -39,6 +39,7 @@
         android:paddingBottom="10dp"
         android:paddingLeft="10dp"
         android:layout_gravity="bottom|end"
+        android:visibility="gone"
         fab:menu_labels_ellipsize="end"
         fab:menu_labels_singleLine="true"
         fab:menu_labels_position="left">

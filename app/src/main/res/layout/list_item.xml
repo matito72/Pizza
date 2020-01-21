@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="6dp">
+    android:padding="6dp"
+    app:contentPadding="0dp">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardPizza"
@@ -16,7 +17,7 @@
         android:focusable="true"
         android:scrollbars="vertical"
         app:cardCornerRadius="12dp"
-        app:contentPadding="6dp">
+        app:contentPadding="0dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -89,7 +90,6 @@
             </LinearLayout>
 
         </RelativeLayout>
-        1
     </androidx.cardview.widget.CardView>
 
 </RelativeLayout>

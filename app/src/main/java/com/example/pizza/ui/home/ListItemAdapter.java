@@ -9,12 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.ColorInt;
 import androidx.cardview.widget.CardView;
-import androidx.fragment.app.FragmentActivity;
 
 import com.example.pizza.Constant;
 import com.example.pizza.MainActivity;
@@ -25,7 +25,6 @@ import com.example.pizza.listPizza.ListPizzaActivity;
 import com.example.pizza.listSnack.ListSnackActivity;
 import com.example.pizza.util.DrawableProvider;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static com.example.pizza.MainActivity.SELECT_PIZZA;
@@ -78,6 +77,9 @@ public class ListItemAdapter extends BaseAdapter {
         }
 
         if (itemBean.getOrder() == 1 || itemBean.getOrder() == 2) {
+            // --------------------
+            // PIZZA e SNACK
+            // --------------------
             CardView cardPizza = convertView.findViewById(R.id.cardPizza);
             ImageView imgItem = convertView.findViewById(R.id.imgItem);
             TextView titleItem = convertView.findViewById(R.id.titoloItem);
@@ -97,7 +99,8 @@ public class ListItemAdapter extends BaseAdapter {
                 titleItem.setText("Nessun snack selezionato");
                 imgItem.setVisibility(View.GONE);
                 descItem.setText("");
-                cardPizza.setVisibility(View.GONE);
+//                cardPizza.setVisibility(View.GONE);
+                prezzoItem.setText("€ 0");
             } else if (itemBean.getTitolo() != null) {
                 titleItem.setText(itemBean.getTitolo());
                 if (itemBean.getTitolo().trim().length() >= 18) {
@@ -158,29 +161,49 @@ public class ListItemAdapter extends BaseAdapter {
                 }
             }
         } else if(itemBean.getOrder() == 23) {
+            // --------------------
+            // NOTE e BABY PIZZA
+            // --------------------
             CardView cardView = convertView.findViewById(R.id.cardNote);
             TextView txtTitolo = convertView.findViewById(R.id.txtTitolo);
             TextView txtDescrizione = convertView.findViewById(R.id.txtDescrizione);
 
+            CheckBox ckBabyPizza = convertView.findViewById(R.id.ckBabyPizza);
+            ckBabyPizza.setOnCheckedChangeListener(
+                    new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            mainActivity.setPizzaBabySel(isChecked);
+                            mainActivity.execMakRequestTask();
+                        }
+                    }
+            );
+
             if (itemBean.getDescrizione() != null && itemBean.getDescrizione().trim().length() != 0) {
                 txtTitolo.setText("Note");
                 txtDescrizione.setText(itemBean.getDescrizione());
-            } else {
-                cardView.setVisibility(View.GONE);
-                txtTitolo.setVisibility(View.GONE);
-                txtDescrizione.setVisibility(View.GONE);
-                convertView.setVisibility(View.GONE);
             }
+//            else {
+//                cardView.setVisibility(View.GONE);
+//                txtTitolo.setVisibility(View.GONE);
+//                txtDescrizione.setVisibility(View.GONE);
+//                convertView.setVisibility(View.GONE);
+//            }
+
+            ckBabyPizza.setChecked(itemBean.isPizzaBaby());
 
             if ((parent.getContext() instanceof  MainActivity)) {
                 convertView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        mainActivity.withMultiChoiceItems(view);
+                        mainActivity.openPopupNoteAndBabyPizza(view);
                     }
                 });
             }
         } else if (itemBean.getOrder() == 3) {
+            // ----------------
+            // TOTALE
+            // ----------------
             TextView txtTotale = convertView.findViewById(R.id.txtTotale);
             txtTotale.setText(itemBean.getTitolo());
             TextView txtImportoTotale = convertView.findViewById(R.id.txtImportoTotale);
