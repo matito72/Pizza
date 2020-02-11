@@ -61,6 +61,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="15"
+                    android:gravity="left"
                     android:inputType="textNoSuggestions"
                     android:textColor="#690101"
                     android:textSize="18sp" />

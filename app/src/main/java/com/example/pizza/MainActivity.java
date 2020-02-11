@@ -54,8 +54,12 @@ import com.example.pizza.ui.tools.ToolsFragment;
 import com.example.pizza.util.DrawableProvider;
 import com.example.pizza.util.Util;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.Scopes;
 import com.google.android.material.navigation.NavigationView;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
@@ -65,13 +69,23 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
+import com.google.api.services.sheets.v4.model.BandedRange;
+import com.google.api.services.sheets.v4.model.BandingProperties;
+import com.google.api.services.sheets.v4.model.BatchGetValuesByDataFilterRequest;
+import com.google.api.services.sheets.v4.model.BatchGetValuesByDataFilterResponse;
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest;
 import com.google.api.services.sheets.v4.model.CellData;
+import com.google.api.services.sheets.v4.model.Color;
+import com.google.api.services.sheets.v4.model.DataFilter;
 import com.google.api.services.sheets.v4.model.ExtendedValue;
+import com.google.api.services.sheets.v4.model.GetSpreadsheetByDataFilterRequest;
 import com.google.api.services.sheets.v4.model.GridCoordinate;
 import com.google.api.services.sheets.v4.model.Request;
 import com.google.api.services.sheets.v4.model.RowData;
+import com.google.api.services.sheets.v4.model.Sheet;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.UpdateCellsRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
@@ -119,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private SnackBean snackBeanSel;
     private ItemBean itemBeanSnackSel;
 
+    private Boolean trasportoDaPagareSel;
     private Boolean pagatoSel;
     private Boolean pizzaBabySel;
 
@@ -288,11 +303,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
 //    public void onSettingsClick(View view) {
-//        Log.i("PIZZA", "Test");
+//        Log.i(Constant.TAG, "Test");
 //    }
 
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.i("PIZZA", "Test");
+        Log.i(Constant.TAG, "Test");
         aggiornaMapFragment();
 
         switch (item.getItemId()) {
@@ -722,23 +737,100 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             super.onCancelled(pizzaBeans);
         }
 
+        private void testUno() {
+            String spreadsheetId =Constant.ID_SHEET_PIZZA; // TODO: Update placeholder value.
+
+            // The DataFilters used to select which ranges to retrieve from the spreadsheet.
+            DataFilter filter = new DataFilter();
+            filter.set("a1Range", "Ordine!A4:A27");
+            List<DataFilter> dataFilters = new ArrayList<>(); // TODO: Update placeholder value.
+            dataFilters.add(filter);
+
+            // TODO: Assign values to desired fields of `requestBody`:
+            GetSpreadsheetByDataFilterRequest requestBody = new GetSpreadsheetByDataFilterRequest();
+            requestBody.setDataFilters(dataFilters);
+            requestBody.setIncludeGridData(true);
+
+            try {
+                Spreadsheet response = mService.spreadsheets().getByDataFilter(spreadsheetId, requestBody).execute();
+
+                int numNominativi = response.getSheets().get(0).getData().get(0).getRowData().size();
+                String nomeCognome = response.getSheets().get(0).getData().get(0).getRowData().get(0).getValues().get(0).getFormattedValue();
+                Color color = response.getSheets().get(0).getData().get(0).getRowData().get(0).getValues().get(0).getEffectiveFormat().getBackgroundColor();
+                String colorGrigioScuro = "{\"blue\":0.9529412,\"green\":0.9529412,\"red\":0.9529412}";
+                String colorGigioChiaro = "{\"blue\":1.0,\"green\":1.0,\"red\":1.0}";
+
+//                String nomeCognome_i = response.getSheets().get(0).getData().get(0).getRowData().get(i).getValues().get(0).getFormattedValue();
+//                Color backgroundColor_i = response.getSheets().get(0).getData().get(0).getRowData().get(i).getValues().get(0).getEffectiveFormat().getBackgroundColor();
+
+                Log.i(Constant.TAG, "");
+            } catch (Exception e) {
+                Log.e(Constant.TAG, e.getMessage());
+            }
+        }
+
+        private void testDue() {
+            String spreadsheetId = Constant.ID_SHEET_PIZZA;
+            List<String> ranges = new ArrayList<>();
+            boolean includeGridData = false; // TODO: Update placeholder value.
+
+            try {
+                Sheets sheetsService = mService;
+                Sheets.Spreadsheets.Get request = sheetsService.spreadsheets().get(spreadsheetId);
+                request.setRanges(ranges);
+                request.setIncludeGridData(includeGridData);
+                Spreadsheet resp = request.execute();
+
+                ArrayList<Sheet> lstSheet = (ArrayList)resp.get("sheets");
+                if (lstSheet != null && lstSheet.size() != 0) {
+                    int numSheet = 0;
+                    for (Sheet sheet : lstSheet) {
+                        Log.i(Constant.TAG, "Sheet." + numSheet++);
+
+                        List<BandedRange> lstBandedRange = sheet.getBandedRanges();
+                        if (lstBandedRange != null && lstBandedRange.size() != 0) {
+                            int numBandedRange = 0;
+                            for (BandedRange bandedRange : lstBandedRange) {
+                                BandingProperties bandingPropertiesRow = bandedRange.getRowProperties();
+                                BandingProperties bandingPropertiesCol = bandedRange.getColumnProperties();
+
+                                Log.i(Constant.TAG, "bandedRange." + numBandedRange++);
+                            }
+                        }
+                    }
+                }
+
+                // ((BandedRange)((ArrayList)((Sheet)((ArrayList)resp.get("sheets")).get(0)).getBandedRanges()).get(1)).getRowProperties()
+
+                Log.i(Constant.TAG, resp.toString());
+            } catch (Exception e) {
+                Log.e(Constant.TAG, e.getMessage());
+            }
+        }
+
         /**
          * Fetch a list of names and majors of students in a sample spreadsheet:
          * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
          * @return List of names and majors
          * @throws IOException
          */
-        private List<PizzaBean> getDataFromApi() throws IOException {
+        private List<PizzaBean> getDataFromApi() throws Exception {
 //            List<ItemBean> lstItemBean = new ArrayList<>();
 //            ItemBean itemBeanRead = null;
             PizzaBean pizzaBeanRead = null;
             SnackBean snackBeanRead = null;
             boolean pizzaBabyRead = false;
+            boolean trasportoDaPagareRead = false;
             boolean pagatoRead = false;
             String noteRead = null;
             SmoothProgressBar smoothProgressBar = findViewById(R.id.progressbar);
 
             if (MainActivity.this.mDataList == null) {
+                // ------------------------------------------
+                // testUno();
+                // testDue();
+                // ------------------------------------------
+
                 ValueRange response = mService.spreadsheets().values().get(Constant.ID_SHEET_PIZZA, "Pizze!A24:Z").execute();
                 List<List<Object>> lstPizze = response.getValues();
 
@@ -755,14 +847,37 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 // Recupera la lista dei Nome Cognome
                 ValueRange response = mService.spreadsheets().values().get(Constant.ID_SHEET_PIZZA, "Ordine!A4:Z").execute();
                 List<List<Object>> lstNomeCognome = response.getValues();
+
                 if (lstNomeCognome != null) {
+                    String nomeCognomeLogin = MainActivity.this.nome + " " + MainActivity.this.cognome;
+
                     int numRow = 0;
                     for (List row : lstNomeCognome) {
-                        String nomeCognomeLogin = MainActivity.this.nome + " " + MainActivity.this.cognome;
                         if (nomeCognomeLogin.equals(row.get(0))) {
                             // ---------------------------------------------------------
                             // ---------------- TROVATO il NOME COGNOME ----------------
                             // ---------------------------------------------------------
+                            int numCellOk = (Constant.START_COL_NAME + numRow);
+
+                            DataFilter filter = new DataFilter();
+                            filter.set("a1Range", "Ordine!A" + numCellOk + ":A" + numCellOk);
+                            List<DataFilter> dataFilters = new ArrayList<>();
+                            dataFilters.add(filter);
+
+                            GetSpreadsheetByDataFilterRequest requestBody = new GetSpreadsheetByDataFilterRequest();
+                            requestBody.setDataFilters(dataFilters);
+                            requestBody.setIncludeGridData(true);
+
+                            Spreadsheet resp = mService.spreadsheets().getByDataFilter(Constant.ID_SHEET_PIZZA, requestBody).execute();
+                            List<RowData> lstRowData = resp.getSheets().get(0).getData().get(0).getRowData();
+                            Color color = resp.getSheets().get(0).getData().get(0).getRowData().get(0).getValues().get(0).getEffectiveFormat().getBackgroundColor();
+                            if (Constant.COLORE_TRASPORTO.equals(color.toString())) {
+                                // ---------------- TRASPORTO DA PAGARE ----------------
+                                trasportoDaPagareRead = true;
+                            }
+                            // ----------------------------------------------------------------------------------------------
+
+
                             MainActivity.this.dataUltimoPagamentoTrasporto = (String)row.get(13); // 04/12/2019
                             String dataAttuale = Util.getStrDataAttuale();
                             MainActivity.this.posNomeCognome = numRow + 3;
@@ -839,9 +954,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 pizzaBeanRead = (MainActivity.this.pizzaBeanSel != null) ? MainActivity.this.pizzaBeanSel : pizzaBeanRead;
                 pizzaBabyRead = (MainActivity.this.pizzaBabySel != null) ? MainActivity.this.pizzaBabySel : pizzaBabyRead;
                 noteRead = (MainActivity.this.noteSel != null) ? MainActivity.this.noteSel : noteRead;
+                trasportoDaPagareRead = (MainActivity.this.trasportoDaPagareSel != null) ? MainActivity.this.trasportoDaPagareSel : trasportoDaPagareRead;
                 pagatoRead = (MainActivity.this.pagatoSel != null) ? MainActivity.this.pagatoSel : pagatoRead;
                 MainActivity.this.pizzaBabySel = pizzaBabyRead;
                 MainActivity.this.noteSel = noteRead;
+                MainActivity.this.trasportoDaPagareSel = trasportoDaPagareRead;
                 MainActivity.this.pagatoSel = pagatoRead;
                 String strTrasporto = pizzaBeanRead.isTrasporto() ? "Spese Trasporto: € 2,00" : "";
 
@@ -849,6 +966,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 MainActivity.this.itemBeanPizzaSel = new ItemBean(pizzaBeanRead.getTitolo(), pizzaBeanRead.getDescrizione2(), "", pizzaBeanRead.getStrEuro(), R.drawable.pizza, 1);
                 MainActivity.this.itemBeanPizzaSel.setPizzaBaby(pizzaBabyRead);
                 MainActivity.this.itemBeanPizzaSel.setNote(noteRead);
+                MainActivity.this.itemBeanPizzaSel.setTrasportoDaPagare(trasportoDaPagareRead);
                 MainActivity.this.itemBeanPizzaSel.setPagato(pagatoRead);
 
                 HomeFragment homeFragment = (HomeFragment) mapFragment.get(R.id.nav_home);
@@ -863,6 +981,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 // Aggiorna la HOME : snack selezionato
                 snackBeanRead = (MainActivity.this.snackBeanSel != null) ? MainActivity.this.snackBeanSel : snackBeanRead;
                 MainActivity.this.itemBeanSnackSel = new ItemBean(snackBeanRead.getTitolo(), snackBeanRead.getDescrizione(), snackBeanRead.getDescrizione2(), snackBeanRead.getStrEuro(), snackBeanRead.getIdImmagine(), 2);
+                MainActivity.this.itemBeanSnackSel.setTrasportoDaPagare(trasportoDaPagareRead);
                 lstItemBean.add(itemBeanSnackSel);
 
 //                MainActivity.this.lstItemBean = lstItemBean;

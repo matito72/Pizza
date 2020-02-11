@@ -38,35 +38,20 @@ public class HomeFragment extends Fragment {
         homeViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
         View root = inflater.inflate(R.layout.fragment_home, container, false);
         final ListView listItemView = root.findViewById(R.id.lstItemView);
-//        final TextView txtPizzaSel = root.findViewById(R.id.txtPizzaSel);
-//        final TextView txtTrasporto = root.findViewById(R.id.txtTrasporto);
-//
-//        homeViewModel.getStrPizzaSel().observe(this, new Observer<String>() {
-//            @Override
-//            public void onChanged(@Nullable String s) {
-//                txtPizzaSel.setText(s);
-//            }
-//        });
-//
-//        homeViewModel.getStrTrasporto().observe(this, new Observer<String>() {
-//            @Override
-//            public void onChanged(@Nullable String s) {
-//                txtTrasporto.setText(s);
-//            }
-//        });
 
         homeViewModel.getDataItemBean().observe(this, new Observer<List<ItemBean>>() {
             @Override
             public void onChanged(List<ItemBean> lstItemBean) {
                 if (lstItemBean != null && lstItemBean.size() != 0) {
+                    boolean trasportoDaPagare = false;
                     boolean pagato = false;
                     BigDecimal importoTotale = new BigDecimal(BigDecimal.ZERO.doubleValue());
                     List<ItemBean> lstItemBeanClone = new ArrayList<ItemBean>();
 
                     for (ItemBean itemBean : lstItemBean) {
-                        if (itemBean.isPagato()) {
-                            pagato = true;
-                        }
+                        pagato = itemBean.isPagato();
+                        trasportoDaPagare = itemBean.isTrasportoDaPagare();
+
                         if (itemBean.isPizzaBaby() && itemBean.getPrezzo() != null && itemBean.getPrezzo().doubleValue() > 0) {
                             itemBean.setPrezzo(itemBean.getPrezzo().subtract(new BigDecimal("0.50")));
                             itemBean.setStrEuro(String.valueOf(itemBean.getPrezzo()));
@@ -75,11 +60,16 @@ public class HomeFragment extends Fragment {
 
                         if (itemBean.getPrezzo() != null && !itemBean.getPrezzo().equals(BigDecimal.ZERO)) {
                             importoTotale = importoTotale.add(itemBean.getPrezzo());
+
+                            if (itemBean.isTrasportoDaPagare()) {
+                                importoTotale = importoTotale.add(new BigDecimal("2.0"));
+                            }
                         }
                     }
 
                     ItemBean itemBeanNew = new ItemBean(Constant.IMPORTO_TOTALE + (pagato ? " pagato" : " da pagare"), "", "", importoTotale.toString(), -1, 3);
                     itemBeanNew.setOrder(3);
+                    itemBeanNew.setTrasportoDaPagare(trasportoDaPagare);
                     itemBeanNew.setPagato(pagato);
                     lstItemBean.add(itemBeanNew);
                 }

@@ -3,7 +3,13 @@ package com.example.pizza;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 public class Constant {
+    public static final String TAG = "PIZZA";
+
     public static final String ID_SHEET_PIZZA = "1hJoou1vJ19CAdCSFfZeZYjYI9Ix1O2UWfFCnB2Ur5N8";
+    public static final int START_COL_NAME = 4;
+//    public static final String COLOR_GRIGIO_SCURO = "{\"blue\":0.9529412,\"green\":0.9529412,\"red\":0.9529412}";
+//    public static final String COLOR_GRIGIO_CHIARO = "{\"blue\":1.0,\"green\":1.0,\"red\":1.0}";
+    public static final String COLORE_TRASPORTO = "{\"blue\":0.9098039,\"green\":0.5254902,\"red\":0.2901961}";
 
     /** Proprietà dell'mmagine SELECT */
     public static final int HIGHLIGHT_COLOR = 0x999be6ff;

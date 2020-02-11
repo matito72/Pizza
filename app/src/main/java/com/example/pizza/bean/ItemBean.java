@@ -13,6 +13,7 @@ public class ItemBean implements Serializable {
     private String descrizione2;
     private String strEuro;
     protected boolean pizzaBaby;
+    protected boolean trasportoDaPagare;
     protected boolean pagato;
     private String note;
     private BigDecimal prezzo;
@@ -108,6 +109,14 @@ public class ItemBean implements Serializable {
 
     public void setPagato(boolean pagato) {
         this.pagato = pagato;
+    }
+
+    public boolean isTrasportoDaPagare() {
+        return trasportoDaPagare;
+    }
+
+    public void setTrasportoDaPagare(boolean trasportoDaPagare) {
+        this.trasportoDaPagare = trasportoDaPagare;
     }
 
     @Override

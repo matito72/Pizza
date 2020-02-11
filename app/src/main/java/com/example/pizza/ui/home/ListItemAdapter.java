@@ -206,15 +206,23 @@ public class ListItemAdapter extends BaseAdapter {
             // ----------------
             TextView txtTotale = convertView.findViewById(R.id.txtTotale);
             txtTotale.setText(itemBean.getTitolo());
-            TextView txtImportoTotale = convertView.findViewById(R.id.txtImportoTotale);
 
+            TextView txtImportoTotale = convertView.findViewById(R.id.txtImportoTotale);
             txtImportoTotale.setText("€ " + itemBean.getStrEuro());
+
+            TextView txtTrasporto = convertView.findViewById(R.id.txtTrasporto);
+            if (itemBean.isTrasportoDaPagare()) {
+                txtTrasporto.setText(" Trasporto: € 2,00");
+                txtTrasporto.setVisibility(View.VISIBLE);
+            } else {
+                txtTrasporto.setVisibility(View.GONE);
+            }
 
             CardView cardTotale = convertView.findViewById(R.id.cardTotale);
             if (itemBean.isPagato()) {
                 cardTotale.setBackgroundColor(Color.parseColor("#85edb9"));
             } else {
-                cardTotale.setBackgroundColor(Color.parseColor("#D81B60"));
+                cardTotale.setBackgroundColor(Color.parseColor("#f18db3"));
             }
         }
 
