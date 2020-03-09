@@ -277,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     item.setNote(MainActivity.this.noteSel);
                 }
 
-                new MakeRequestTask(mCredential).execute();
+                new MakeRequestTask(mCredential, false).execute();
             }
         });
 
@@ -285,7 +285,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     public void execMakRequestTask() {
-        new MakeRequestTask(mCredential).execute();
+        new MakeRequestTask(mCredential, false).execute();
     }
 
     @Override
@@ -338,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                     // INIT variabili:
                                     MainActivity.this.initVariabili();
 
-                                    MainActivity.this.getResultsFromApi();
+                                    MainActivity.this.getResultsFromApi(false);
                                     flatDialog.dismiss();
                                 } else {
                                     Toast.makeText(MainActivity.this, "Nome e/o Cognome non validi.", Toast.LENGTH_SHORT).show();
@@ -368,6 +368,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         itemBeanSnackSel = null;
     }
 
+    public boolean testInit() {
+        return this.itemBeanNoteSel != null;
+    }
+
     /**
      * Attempt to call the API, after verifying that all the preconditions are
      * satisfied. The preconditions are: Google Play Services installed, an
@@ -375,8 +379,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      * of the preconditions are not satisfied, the app will prompt the user as
      * appropriate.
      */
-    public void getResultsFromApi() {
-        if (! isGooglePlayServicesAvailable()) {
+    public void getResultsFromApi(boolean reload) {
+        if (!isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccount();
@@ -384,10 +388,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 //            mOutputText.setText("No network connection available.");
         } else {
             SmoothProgressBar smoothProgressBar = findViewById(R.id.progressbar);
-            smoothProgressBar.setVisibility(View.VISIBLE);
-            smoothProgressBar.progressiveStart();
-
-            new MakeRequestTask(mCredential).execute();
+            if (smoothProgressBar != null) {
+                smoothProgressBar.setVisibility(View.VISIBLE);
+                smoothProgressBar.progressiveStart();
+            }
+            new MakeRequestTask(mCredential, reload).execute();
         }
     }
 
@@ -407,7 +412,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             this.cognome = cognomeDef;
 
             this.aggiornaMapFragment();
-            this.getResultsFromApi();
+            this.getResultsFromApi(false);
         } else {
             getSupportActionBar().setTitle("Utente non loggato!");
 
@@ -428,7 +433,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
             if (fragment instanceof GalleryFragment && mapFragment.get(R.id.nav_gallery) == null) {
                 mapFragment.put(R.id.nav_gallery, fragment);
-            } else if (fragment instanceof HomeFragment && mapFragment.get(R.id.nav_home) == null) {
+            } else if (fragment instanceof HomeFragment) { // && mapFragment.get(R.id.nav_home) == null) {
                 mapFragment.put(R.id.nav_home, fragment);
             } else if (fragment instanceof SendFragment && mapFragment.get(R.id.nav_send) == null) {
                 mapFragment.put(R.id.nav_send, fragment);
@@ -500,7 +505,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     .getString(PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
-                getResultsFromApi();
+                getResultsFromApi(false);
             } else {
                 // Start a dialog from which the user can choose an account
                 startActivityForResult(
@@ -540,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 //                            "This app requires Google Play Services. Please install " +
 //                                    "Google Play Services on your device and relaunch this app.");
                 } else {
-                    getResultsFromApi();
+                    getResultsFromApi(false);
                 }
                 break;
             case REQUEST_ACCOUNT_PICKER:
@@ -555,14 +560,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         editor.putString(PREF_ACCOUNT_NAME, accountName);
                         editor.apply();
                         mCredential.setSelectedAccountName(accountName);
-                        getResultsFromApi();
+                        getResultsFromApi(false);
                     }
                 }
                 break;
             case REQUEST_AUTHORIZATION:
                 if (resultCode == RESULT_OK) {
 
-                    getResultsFromApi();
+                    getResultsFromApi(false);
                 }
                 break;
             case SELECT_PIZZA:
@@ -705,10 +710,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      * An asynchronous task that handles the Google Sheets API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
-    private class MakeRequestTask extends AsyncTask<Void, Void, List<PizzaBean>> {
+    private class MakeRequestTask extends AsyncTask<Void, Void, Object[]> {
         private Exception mLastError = null;
+        private boolean reload;
 
-        MakeRequestTask(GoogleAccountCredential credential) {
+        MakeRequestTask(GoogleAccountCredential credential, boolean reload) {
+            this.reload = reload;
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.sheets.v4.Sheets.Builder(
@@ -722,10 +729,23 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
          * @param params no parameters needed for this task.
          */
         @Override
-        protected List<PizzaBean> doInBackground(Void... params) {
+        protected Object[] doInBackground(Void... params) {
             try {
-                return getDataFromApi();
+                Object[] arr2Obj =  getDataFromApi();
+                List<PizzaBean> lstPizzaBean = (List<PizzaBean>) arr2Obj[0];
+
+//                if (arr2Obj != null && arr2Obj.length >= 2 && arr2Obj[1] != null) {
+//                    List<ItemBean> lstItemBean = (List<ItemBean>) arr2Obj[1];
+//                    if (this.reload) {
+//                        HomeFragment homeFragment = (HomeFragment) mapFragment.get(R.id.nav_home);
+//                        homeFragment.aggiornaData(lstItemBean);
+//                    }
+//                }
+
+                return arr2Obj;
             } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(Constant.TAG, e.getMessage());
                 mLastError = e;
                 cancel(true);
                 return null;
@@ -733,8 +753,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
 
         @Override
-        protected void onCancelled(List<PizzaBean> pizzaBeans) {
-            super.onCancelled(pizzaBeans);
+        protected void onCancelled(Object[] arr2Obj) {
+            super.onCancelled(arr2Obj);
         }
 
         private void testUno() {
@@ -765,6 +785,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                 Log.i(Constant.TAG, "");
             } catch (Exception e) {
+                e.printStackTrace();
                 Log.e(Constant.TAG, e.getMessage());
             }
         }
@@ -804,6 +825,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                 Log.i(Constant.TAG, resp.toString());
             } catch (Exception e) {
+                e.printStackTrace();
                 Log.e(Constant.TAG, e.getMessage());
             }
         }
@@ -814,9 +836,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
          * @return List of names and majors
          * @throws IOException
          */
-        private List<PizzaBean> getDataFromApi() throws Exception {
+        private Object[] getDataFromApi() throws Exception {
 //            List<ItemBean> lstItemBean = new ArrayList<>();
 //            ItemBean itemBeanRead = null;
+            Object[] arr2Obj = new Object[2];
+            ArrayList<ItemBean> lstItemBean = new ArrayList<ItemBean>();
             PizzaBean pizzaBeanRead = null;
             SnackBean snackBeanRead = null;
             boolean pizzaBabyRead = false;
@@ -950,7 +974,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
 
             if (mapFragment.get(R.id.nav_home) != null && (MainActivity.this.pizzaBeanSel != null || pizzaBeanRead != null)) {
-                ArrayList<ItemBean> lstItemBean = new ArrayList<ItemBean>();
                 pizzaBeanRead = (MainActivity.this.pizzaBeanSel != null) ? MainActivity.this.pizzaBeanSel : pizzaBeanRead;
                 pizzaBabyRead = (MainActivity.this.pizzaBabySel != null) ? MainActivity.this.pizzaBabySel : pizzaBabyRead;
                 noteRead = (MainActivity.this.noteSel != null) ? MainActivity.this.noteSel : noteRead;
@@ -960,7 +983,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 MainActivity.this.noteSel = noteRead;
                 MainActivity.this.trasportoDaPagareSel = trasportoDaPagareRead;
                 MainActivity.this.pagatoSel = pagatoRead;
-                String strTrasporto = pizzaBeanRead.isTrasporto() ? "Spese Trasporto: € 2,00" : "";
+//                String strTrasporto = pizzaBeanRead.isTrasporto() ? "Spese Trasporto: € 2,00" : "";
 
                 // Aggiorna la HOME : pizza selezionata
                 MainActivity.this.itemBeanPizzaSel = new ItemBean(pizzaBeanRead.getTitolo(), pizzaBeanRead.getDescrizione2(), "", pizzaBeanRead.getStrEuro(), R.drawable.pizza, 1);
@@ -982,12 +1005,22 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 snackBeanRead = (MainActivity.this.snackBeanSel != null) ? MainActivity.this.snackBeanSel : snackBeanRead;
                 MainActivity.this.itemBeanSnackSel = new ItemBean(snackBeanRead.getTitolo(), snackBeanRead.getDescrizione(), snackBeanRead.getDescrizione2(), snackBeanRead.getStrEuro(), snackBeanRead.getIdImmagine(), 2);
                 MainActivity.this.itemBeanSnackSel.setTrasportoDaPagare(trasportoDaPagareRead);
+                MainActivity.this.itemBeanSnackSel.setPagato(pagatoRead);
                 lstItemBean.add(itemBeanSnackSel);
 
 //                MainActivity.this.lstItemBean = lstItemBean;
-                homeFragment.getHomeViewModel().changeDataItemBeanSel(lstItemBean);
+//                homeFragment.getHomeViewModel().clearDataItemBean();
+//                homeFragment.getHomeViewModel().changeDataItemBeanSel(lstItemBean);
 
-                smoothProgressBar.setVisibility(View.INVISIBLE);
+//                if (reload) {
+////                    homeFragment.getAdapterList().changeDataItemBeanSel(true, lstItemBean);
+//                    // homeFragment.aggiornaData(lstItemBean);
+//                } else {
+//                    homeFragment.getAdapterList().changeDataItemBeanSel(false, lstItemBean);
+//                }
+
+                if (smoothProgressBar != null)
+                    smoothProgressBar.setVisibility(View.INVISIBLE);
             }
 
             // --------------------------------------------------------------------------------------------
@@ -1026,11 +1059,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             MainActivity.this.pizzaBeanSel = (pizzaBeanRead != null) ? pizzaBeanRead : MainActivity.this.pizzaBeanSel;
             MainActivity.this.snackBeanSel = (snackBeanRead != null) ? snackBeanRead : MainActivity.this.snackBeanSel;
 
-            return MainActivity.this.mDataList;
+            arr2Obj[0] = MainActivity.this.mDataList;
+            arr2Obj[1] = lstItemBean;
+            return arr2Obj;
         }
 
         @Override
-        protected void onPostExecute(List<PizzaBean> output) {
+        protected void onPostExecute(Object[] arr2Obj) {
+            List<PizzaBean> output = (List<PizzaBean>) arr2Obj[0];
+
             if (MainActivity.this.posNomeCognome != 0) {
                 getSupportActionBar().setTitle(MainActivity.this.nome + " " + MainActivity.this.cognome);
             } else {
@@ -1040,7 +1077,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 smoothProgressBar.progressiveStop();
 
                 HomeFragment homeFragment = (HomeFragment) mapFragment.get(R.id.nav_home);
-                homeFragment.getHomeViewModel().changeDataItemBeanSel(new ArrayList<>());
+//                homeFragment.getHomeViewModel().changeDataItemBeanSel(new ArrayList<>());
+                homeFragment.getAdapterList().changeDataItemBeanSel(true, new ArrayList<>());
             }
 
             if (output == null || output.size() == 0) {
@@ -1052,6 +1090,34 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     pizzaBeanNo.setPrezzo(BigDecimal.ZERO);
 
                     output.add(0, pizzaBeanNo);
+                }
+
+                if (arr2Obj != null && arr2Obj.length >= 2 && arr2Obj[1] != null) {
+                    HomeFragment homeFragment = (HomeFragment) mapFragment.get(R.id.nav_home);
+                    List<ItemBean> lstItemBean = (List<ItemBean>) arr2Obj[1];
+
+//                    if (this.reload) {
+                        try {
+//                          homeFragment.aggiornaData(lstItemBean);
+//                            homeFragment.getHomeViewModel().getDataItemBean().postValue(lstItemBean);
+//                            homeFragment.getAdapterList().changeDataItemBeanSel(true, lstItemBean);
+
+                            if (homeFragment.getAdapterList() == null) {
+                                aggiornaMapFragment();
+                                homeFragment = (HomeFragment) mapFragment.get(R.id.nav_home);
+                            }
+
+                            homeFragment.getAdapterList().changeDataItemBeanSel(false, null);
+                            homeFragment.getAdapterList().changeDataItemBeanSel(false, lstItemBean);
+
+                            SmoothProgressBar smoothProgressBar = findViewById(R.id.progressbar);
+                            smoothProgressBar.progressiveStop();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+//                    } else {
+//                        homeFragment.getAdapterList().changeDataItemBeanSel(false, lstItemBean);
+//                    }
                 }
             }
         }

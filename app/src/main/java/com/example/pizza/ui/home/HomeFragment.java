@@ -33,11 +33,32 @@ import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
+    private ListItemAdapter adapterList;
+    private ListView listItemView;
+    private LayoutInflater myInflater;
+    private ViewGroup myContainer;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        this.myInflater = inflater;
+        this.myContainer = container;
+
         homeViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
         View root = inflater.inflate(R.layout.fragment_home, container, false);
-        final ListView listItemView = root.findViewById(R.id.lstItemView);
+        listItemView = root.findViewById(R.id.lstItemView);
+        adapterList = new ListItemAdapter(inflater, container, new ArrayList<ItemBean>(), homeViewModel);
+
+//        homeViewModel.clearDataItemBean();
+
+        FragmentActivity activity = getActivity();
+        if (activity != null && activity instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity)activity;
+
+            getHomeViewModel().clearDataItemBean();
+            mainActivity.initVariabili();
+            if (mainActivity.testInit()) {
+                mainActivity.getResultsFromApi(true);
+            }
+        }
 
         homeViewModel.getDataItemBean().observe(this, new Observer<List<ItemBean>>() {
             @Override
@@ -74,7 +95,7 @@ public class HomeFragment extends Fragment {
                     lstItemBean.add(itemBeanNew);
                 }
 
-                ListItemAdapter adapterList = new ListItemAdapter(inflater, container, lstItemBean);
+                adapterList = new ListItemAdapter(inflater, container, lstItemBean, homeViewModel);
                 listItemView.setAdapter(adapterList);
             }
         });
@@ -89,13 +110,6 @@ public class HomeFragment extends Fragment {
         FragmentActivity activity = getActivity();
         if (activity != null && activity instanceof MainActivity) {
             MainActivity mainActivity = (MainActivity)activity;
-            if (mainActivity.getPizzaBean() != null) {
-//                String strTrasporto = mainActivity.getPizzaBean().isTrasporto() ? "Spese Trasporto: € 2,00" : "";
-//                getHomeViewModel().changeStrPizzaSel(mainActivity.getPizzaBean().getDescrizione(), strTrasporto);
-//
-//                SmoothProgressBar smoothProgressBar = activity.findViewById(R.id.progressbar);
-//                smoothProgressBar.setVisibility(View.INVISIBLE);
-            }
 
             final SwipyRefreshLayout homeRefresh = mainActivity.findViewById(R.id.homeRefresh);
             homeRefresh.setOnRefreshListener(new SwipyRefreshLayout.OnRefreshListener() {
@@ -106,7 +120,7 @@ public class HomeFragment extends Fragment {
 
                     getHomeViewModel().clearDataItemBean();
                     mainActivity.initVariabili();
-                    mainActivity.getResultsFromApi();
+                    mainActivity.getResultsFromApi(false);
 
                     homeRefresh.setRefreshing(false);
                 }
@@ -114,7 +128,106 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onDestroyOptionsMenu() {
+        super.onDestroyOptionsMenu();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        this.adapterList = null;
+        this.homeViewModel.changeDataItemBeanSel(null);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+    }
+
     public HomeViewModel getHomeViewModel() {
         return homeViewModel;
+    }
+
+    public ListItemAdapter getAdapterList() {
+        return adapterList;
+    }
+
+    public void aggiornaData(List<ItemBean> lstItemBean) {
+//        homeViewModel = ViewModelProviders.of(this).get(HomeViewModel.class);
+//        View root = myInflater.inflate(R.layout.fragment_home, myContainer, false);
+//        listItemView = root.findViewById(R.id.lstItemView);
+//        adapterList = new ListItemAdapter(myInflater, myContainer, lstItemBean, homeViewModel);
+//        listItemView.setAdapter(adapterList);
+
+//        homeViewModel.changeDataItemBeanSel(lstItemBean);
+        homeViewModel.getDataItemBean().setValue(lstItemBean);
+
+        if (lstItemBean != null && lstItemBean.size() != 0) {
+            boolean trasportoDaPagare = false;
+            boolean pagato = false;
+            BigDecimal importoTotale = new BigDecimal(BigDecimal.ZERO.doubleValue());
+            List<ItemBean> lstItemBeanClone = new ArrayList<ItemBean>();
+
+            for (ItemBean itemBean : lstItemBean) {
+                pagato = itemBean.isPagato();
+                trasportoDaPagare = itemBean.isTrasportoDaPagare();
+
+                if (itemBean.isPizzaBaby() && itemBean.getPrezzo() != null && itemBean.getPrezzo().doubleValue() > 0) {
+                    itemBean.setPrezzo(itemBean.getPrezzo().subtract(new BigDecimal("0.50")));
+                    itemBean.setStrEuro(String.valueOf(itemBean.getPrezzo()));
+                }
+                lstItemBeanClone.add(itemBean);
+
+                if (itemBean.getPrezzo() != null && !itemBean.getPrezzo().equals(BigDecimal.ZERO)) {
+                    importoTotale = importoTotale.add(itemBean.getPrezzo());
+
+                    if (itemBean.isTrasportoDaPagare()) {
+                        importoTotale = importoTotale.add(new BigDecimal("2.0"));
+                    }
+                }
+            }
+
+            ItemBean itemBeanNew = new ItemBean(Constant.IMPORTO_TOTALE + (pagato ? " pagato" : " da pagare"), "", "", importoTotale.toString(), -1, 3);
+            itemBeanNew.setOrder(3);
+            itemBeanNew.setTrasportoDaPagare(trasportoDaPagare);
+            itemBeanNew.setPagato(pagato);
+            lstItemBean.add(itemBeanNew);
+        }
+
+        adapterList = new ListItemAdapter(myInflater, myContainer, lstItemBean, homeViewModel);
+        listItemView.setAdapter(adapterList);
+         getAdapterList().changeDataItemBeanSel(true, lstItemBean);
     }
 }

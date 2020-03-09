@@ -26,12 +26,8 @@ public class HomeViewModel extends ViewModel {
         strTrasporto.setValue(" ");
     }
 
-    public LiveData<List<ItemBean>> getDataItemBean() {
+    public MutableLiveData<List<ItemBean>> getDataItemBean() {
         return dataItemBean;
-    }
-
-    public void clearDataItemBean() {
-        this.changeDataItemBeanSel(new ArrayList<ItemBean>());
     }
 
     public synchronized List<ItemBean> addItemBean(ItemBean itemBean) {
@@ -70,8 +66,23 @@ public class HomeViewModel extends ViewModel {
         return lstItemBean;
     }
 
+    public void clearDataItemBean() {
+//        this.changeDataItemBeanSel(new ArrayList<ItemBean>());
+
+        if (this.dataItemBean.getValue() != null && this.dataItemBean.getValue().size() != 0 && this.dataItemBean.getValue().get(0) != null)
+            this.dataItemBean.postValue(new ArrayList<ItemBean>());
+    }
+
     public void changeDataItemBeanSel(List<ItemBean> lstItemBean){
-        this.dataItemBean.postValue(lstItemBean);
+        /*if (lstItemBean == null || lstItemBean.size() == 0) {
+            dataItemBean = new MutableLiveData<List<ItemBean>>();
+            this.dataItemBean.setValue(lstItemBean);
+            return;
+        }
+        this.dataItemBean = new MutableLiveData<List<ItemBean>>(lstItemBean);*/
+
+//        if (this.dataItemBean.getValue() == null || this.dataItemBean.getValue().size() == 0)
+            this.dataItemBean.postValue(lstItemBean);
     }
 
     public LiveData<String> getStrPizzaSel() {
@@ -87,7 +98,10 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void changeStrPizzaSel(String strPizzaSel, String strTrasporto){
+        // this.strPizzaSel = new MutableLiveData<String>();
         this.strPizzaSel.postValue(strPizzaSel);
+
+        // this.strTrasporto = new MutableLiveData<String>();
         this.strTrasporto.postValue(strTrasporto);
     }
 }

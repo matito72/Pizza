@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.cardview.widget.CardView;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.example.pizza.Constant;
 import com.example.pizza.MainActivity;
@@ -35,11 +36,13 @@ public class ListItemAdapter extends BaseAdapter {
     private LayoutInflater inflater;
     private ViewGroup container;
     private List<ItemBean> mDataList;
+    private HomeViewModel homeViewModel;
 
-    public ListItemAdapter(LayoutInflater inflater, ViewGroup container, List<ItemBean> mDataList) {
+    public ListItemAdapter(LayoutInflater inflater, ViewGroup container, List<ItemBean> mDataList, HomeViewModel homeViewModel) {
         this.inflater = inflater;
         this.container = container;
         this.mDataList = mDataList;
+        this.homeViewModel = homeViewModel;
     }
 
     @Override
@@ -57,6 +60,13 @@ public class ListItemAdapter extends BaseAdapter {
         return position;
     }
 
+    public void changeDataItemBeanSel(boolean reload, List<ItemBean> lstItemBean){
+        homeViewModel.changeDataItemBeanSel(lstItemBean);
+
+        if (reload)
+            notifyDataSetChanged();
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         final ListItemAdapter.ViewHolder holder;
@@ -70,6 +80,8 @@ public class ListItemAdapter extends BaseAdapter {
                 convertView = inflater.inflate(R.layout.list_item_descrizione, container, false);
             } else if (itemBean.getOrder() == 3) {
                 convertView = inflater.inflate(R.layout.list_item_totale, container, false);
+            } else {
+                convertView = inflater.inflate(R.layout.list_item, container, false);
             }
 
             holder = new ListItemAdapter.ViewHolder(convertView);
